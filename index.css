@@ -25,3 +25,15 @@ h1 {
     padding: 1em;
     background-color: #faf4f4;
 }
+
+.buttons-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+button {
+    padding: 10px;
+    font-family: 'Lato', sans-serif;
+    margin: 1rem;
+}
