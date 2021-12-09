@@ -6,7 +6,13 @@ const client = (() => {
             .then(registration => registration.showNotification("ola", {
                 body: "body message",
                 icon: "imgs/notification.png",
-                actions: [{ action: "search", title: "search" }, { action: "search 2", title: "search 2" }]
+                actions: [
+                    { action: "search", title: "search" }
+                ],
+                data: {
+                    notificationTime: Date.now(),
+                    githubUser: "luizaprata"
+                }
             }))
     }
     const notificationBtn = document.getElementById("btn-notify");
