@@ -3,7 +3,11 @@ const client = (() => {
 
     const showNotification = () => {
         navigator.serviceWorker.getRegistration()
-            .then(registration => registration.showNotification("ola", { body: "body message" }))
+            .then(registration => registration.showNotification("ola", {
+                body: "body message",
+                icon: "imgs/notification.png",
+                actions: [{ action: "search", title: "search" }, { action: "search 2", title: "search 2" }]
+            }))
     }
     const notificationBtn = document.getElementById("btn-notify");
     notificationBtn.addEventListener('click', showNotification)
