@@ -91,6 +91,7 @@ Use [Notification Generator](https://serviceworke.rs/push-get-payload_demo.html)
 [W3 Spec on Page Visibility](https://www.w3.org/TR/page-visibility/#dom-document-visibilitystate)  
 
 
-
+## How generate VAPID keys?
+`./node_modules/.bin/web-push generate-vapid-keys`
 
 
