@@ -10,8 +10,9 @@ const pushSubscription = {
     }
 }
 
-const vapidPublicKey = 'BBjDHF8cFoJznds83RrbZByg-UQCxWTNb9afVNjxjbpIsj2CaJyKDrndm9GwHk9Tbargfzt83gYprv9kl1OvIEU';
-const vapidPrivateKey = 'j1bKaA0HcYpB58PW3Ho2wg2WcK7raVplzN7zGo3Pnfw';
+
+const vapidPublicKey = 'BO7XgY8MGc0ZQxDCVxtv3E3No1nIYpgfb56SqryU_-xE-6WdFuoqmtMAHAwZiny-UGGuLb6r2Mjv8mSUUqjWP_o';
+const vapidPrivateKey = 'wOwYawqO9j7s8Iw_uRkPzuSQOY-VC5FyTxrpuVCEcK4';
 
 const options = {
     TTL: 60,
