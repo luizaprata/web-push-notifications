@@ -1,158 +1,98 @@
-const client = (() => {
-    let serviceWorkerRegObj = undefined;
-    const notificationButton = document.getElementById("btn-notify");
-    const pushButton = document.getElementById("btn-push");
-    let isUserSubscribed = false;
 
-    const showNotificationButton = () => {
-        notificationButton.style.display = "block";
-        notificationButton.addEventListener("click", showNotification);
+
+
+const client = (() => {
+
+    function urlB64ToUint8Array(url) {
+        const padding = '='.repeat((4 - url.length % 4) % 4);
+        const base64 = (url + padding)
+            .replace(/\-/g, '+')
+            .replace(/_/g, '/');
+
+        const rawData = window.atob(base64);
+        const outputArray = new Uint8Array(rawData.length);
+
+        for (let i = 0; i < rawData.length; ++i) {
+            outputArray[i] = rawData.charCodeAt(i);
+        }
+        return outputArray;
     }
 
-    const showNotification = () => {
-        const simpleTextNotification = reg => reg.showNotification("My First Notification")
 
-        const customizedNotification = reg => {
-            const options = {
-                body: 'This is an important body!',
+
+    let serviceWorkerRegObj = undefined;
+
+    const showNotification = () => {
+        navigator.serviceWorker.getRegistration()
+            .then(registration => registration.showNotification("ola", {
+                body: "body message",
                 icon: "imgs/notification.png",
                 actions: [
-                    { action: "search", title: "Try Searching!" },
-                    { action: "close", title: "Forget it!" },
+                    { action: "search", title: "search" }
                 ],
                 data: {
                     notificationTime: Date.now(),
-                    githubUser: "hhimanshu"
+                    githubUser: "luizaprata"
                 }
-            }
-            reg.showNotification('Second Notification', options)
-        }
-
-        navigator.serviceWorker.getRegistration()
-            .then(registration => customizedNotification(registration));
+            }))
     }
+    const notificationBtn = document.getElementById("btn-notify");
+    const pushBtn = document.getElementById("btn-push");
+    notificationBtn.addEventListener('click', showNotification)
+
 
     const checkNotificationSupport = () => {
-        if (!('Notification' in window)) {
-            return Promise.reject("The browser doesn't support notifications.")
-        }
-        console.log("The browser support Notifications!")
-        return Promise.resolve("Ok!")
+        if (!('Notification' in window)) return Promise.reject("notification not supported")
+        return Promise.resolve("ok")
     }
-
     const registerServiceWorker = () => {
-        if (!('serviceWorker') in navigator) {
-            return Promise.reject("ServiceWorker support is not available.")
-        }
-
+        if (!('serviceWorker' in navigator)) return Promise.reject("service worker not supported")
         return navigator.serviceWorker.register('service-worker.js')
             .then(regObj => {
-                console.log("service worker is registered successfully!");
+                console.log("service worker is registered succesfully!")
                 serviceWorkerRegObj = regObj;
-                showNotificationButton();
-
-                serviceWorkerRegObj.pushManager.getSubscription()
-                    .then(subs => {
-                        if (subs) disablePushNotificationButton()
-                        else enablePushNotificationButton()
-                    })
             })
     }
 
-    const requestNotificationPermissions = () => {
+    const requestNotificationPermission = () => {
         return Notification.requestPermission(status => {
-            console.log("Notification Permission Status:", status);
+            console.log(`notification status ${status}`)
         })
     }
 
     checkNotificationSupport()
         .then(registerServiceWorker)
-        .then(requestNotificationPermissions)
+        .then(requestNotificationPermission)
         .catch(err => console.error(err))
 
-    const disablePushNotificationButton = () => {
-        isUserSubscribed = true
-        pushButton.innerText = "DISABLE PUSH NOTIFICATIONS"
-        pushButton.style.backgroundColor = "#ea9085"
-    }
 
-    const enablePushNotificationButton = () => {
-        isUserSubscribed = false
-        pushButton.innerText = "ENABLE PUSH NOTIFICATIONS"
-        pushButton.style.backgroundColor = "#efb1ff"
-    }
-
-    const setupPush = () => {
-        function urlB64ToUint8Array(url) {
-            const padding = '='.repeat((4 - url.length % 4) % 4);
-            const base64 = (url + padding)
-                .replace(/\-/g, '+')
-                .replace(/_/g, '/');
-
-            const rawData = window.atob(base64);
-            const outputArray = new Uint8Array(rawData.length);
-
-            for (let i = 0; i < rawData.length; ++i) {
-                outputArray[i] = rawData.charCodeAt(i);
-            }
-            return outputArray;
-        }
-
-        const subscribeWithServer = (subscription) => {
-            return fetch('http://localhost:3000/addSubscriber', {
-                method: 'POST',
-                body: JSON.stringify(subscription),
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            })
-        }
-
+    const setPush = () => {
+        let isSubscribed = false
         const subscribeUser = () => {
-            const appServerPublicKey = "BBjDHF8cFoJznds83RrbZByg-UQCxWTNb9afVNjxjbpIsj2CaJyKDrndm9GwHk9Tbargfzt83gYprv9kl1OvIEU";
-            const publicKeyAsArray = urlB64ToUint8Array(appServerPublicKey)
-
+            isSubscribed = true;
+            console.log("subsc user")
+            const appServerPublicKey = "BO7XgY8MGc0ZQxDCVxtv3E3No1nIYpgfb56SqryU_-xE-6WdFuoqmtMAHAwZiny-UGGuLb6r2Mjv8mSUUqjWP_o"
+            const applicationServerKey = urlB64ToUint8Array(appServerPublicKey)
             serviceWorkerRegObj.pushManager.subscribe({
-                    userVisibleOnly: true,
-                    applicationServerKey: publicKeyAsArray
-                })
-                .then(subscription => {
-                    console.log(JSON.stringify(subscription, null, 4))
-                    subscribeWithServer(subscription)
-                    disablePushNotificationButton();
-                })
-                .catch(error => console.error("Failed to subscribe to Push Service.", error))
+                userVisibleOnly: true,
+                applicationServerKey
+            }).then(subscription => {
+                console.log({ subscription })
+            }).catch(error => console.error(error));
         }
-
-        const unsubscribeWithServer = (id) => {
-            return fetch('http://localhost:3000/removeSubscriber', {
-                method: 'POST',
-                body: JSON.stringify({ id }),
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            })
-        }
-
         const unSubscribeUser = () => {
-            console.log("un-subscribing user")
-            serviceWorkerRegObj.pushManager.getSubscription()
-                .then(subscription => {
-                    if (subscription) {
-                        let subAsString = JSON.stringify(subscription);
-                        let subAsObject = JSON.parse(subAsString)
-                        unsubscribeWithServer(subAsObject.keys.auth)
-                        return subscription.unsubscribe()
-                    }
-                })
-                .then(enablePushNotificationButton)
-                .catch(error => console.error("Failed to unsubscribe from Push Service.", error))
+            isSubscribed = false;
+            console.log("un-subsc user")
         }
 
-        pushButton.addEventListener('click', () => {
-            if (isUserSubscribed) unSubscribeUser()
-            else subscribeUser();
+        pushBtn.addEventListener('click', () => {
+            if (isSubscribed) {
+                unSubscribeUser()
+            } else {
+                subscribeUser();
+            }
         })
     }
-    setupPush()
+    setPush();
+
 })()
