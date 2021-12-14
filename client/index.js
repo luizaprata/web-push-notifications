@@ -67,30 +67,32 @@ const client = (() => {
 
 
     const setPush = () => {
-        let isSubscribed = false
-        const subscribeUser = () => {
-            isSubscribed = true;
-            console.log("subsc user")
-            const appServerPublicKey = "BO7XgY8MGc0ZQxDCVxtv3E3No1nIYpgfb56SqryU_-xE-6WdFuoqmtMAHAwZiny-UGGuLb6r2Mjv8mSUUqjWP_o"
-            const applicationServerKey = urlB64ToUint8Array(appServerPublicKey)
-            serviceWorkerRegObj.pushManager.subscribe({
-                userVisibleOnly: true,
-                applicationServerKey
-            }).then(subscription => {
-                console.log({ subscription })
-            }).catch(error => console.error(error));
-        }
-        const unSubscribeUser = () => {
-            isSubscribed = false;
-            console.log("un-subsc user")
-        }
+        let loading = false
 
         pushBtn.addEventListener('click', () => {
-            if (isSubscribed) {
-                unSubscribeUser()
-            } else {
-                subscribeUser();
-            }
+            if (loading) return
+            loading = true
+            serviceWorkerRegObj.pushManager.getSubscription()
+                .then(subs => {
+                    if (subs) {
+                        subs.unsubscribe()
+                            .then(subscription => {
+                                loading = false;
+                                console.log('unsubscribed', subscription)
+                            }).catch(error => console.error(error));
+                    }
+                    else {
+                        const appServerPublicKey = "BO7XgY8MGc0ZQxDCVxtv3E3No1nIYpgfb56SqryU_-xE-6WdFuoqmtMAHAwZiny-UGGuLb6r2Mjv8mSUUqjWP_o"
+                        const applicationServerKey = urlB64ToUint8Array(appServerPublicKey)
+                        serviceWorkerRegObj.pushManager.subscribe({
+                            userVisibleOnly: true,
+                            applicationServerKey
+                        }).then(subscription => {
+                            loading = false;
+                            console.log("subscribed", subscription)
+                        }).catch(error => console.error(error));
+                    }
+                })
         })
     }
     setPush();
